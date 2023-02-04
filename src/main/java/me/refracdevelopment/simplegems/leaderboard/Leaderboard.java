@@ -1,3 +1,4 @@
+
 package me.refracdevelopment.simplegems.leaderboard;
 
 import lombok.Getter;
@@ -26,23 +27,15 @@ public class Leaderboard {
         this.topGems.clear();
 
         if (this.plugin.getDataType() == DataType.MYSQL) {
-            Bukkit.getOnlinePlayers().forEach(player -> {
-                ProfileData profileData = plugin.getProfileManager().getProfile(player.getUniqueId()).getData();
-                String name = player.getName();
-                long gems = profileData.getGems().getAmount();
-                if (!this.topGems.containsKey(name)) {
-                    this.topGems.putIfAbsent(name, new TopGems(name, gems));
-                }
-            });
 
-            this.plugin.getSqlManager().select("SELECT * FROM SimpleGems ORDER BY gems", resultSet -> {
+            // get top 10 gems from database in order of highest to lowest to the map
+            this.plugin.getSqlManager().select("SELECT * FROM SimpleGems ORDER BY gems DESC LIMIT 10", resultSet -> {
                 try {
+                // order from highest to lowest
                     while (resultSet.next()) {
                         String name = resultSet.getString("name");
                         long gems = resultSet.getLong("gems");
-                        if (!this.topGems.containsKey(name)) {
-                            this.topGems.putIfAbsent(name, new TopGems(name, gems));
-                        }
+                        this.topGems.putIfAbsent(name, new TopGems(name, gems));
                     }
                 } catch (SQLException exception) {
                     Color.log(exception.getMessage());
